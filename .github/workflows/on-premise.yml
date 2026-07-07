@@ -47,6 +47,7 @@ jobs:
       GITHUB_ORG: ${{ github.repository_owner }}
       SVC_NAME: ${{ github.event.repository.name }}-svc
       NS: sis-${{ github.ref_name  }}-ms
+      MS_PATH: auth
     steps:
       - uses: actions/checkout@v4
 
@@ -59,5 +60,5 @@ jobs:
       - name: Show deployment information
         run: |
           echo "Deployment completed successfully."
-          echo "DNS Externo: http://microservicio.${NS}.lab/users"
-          echo "DNS interno: ${SVC_NAME}.${NS}.svc.cluster.local/users"
+          echo "DNS Externo: http://microservicio.${NS}.lab/${MS_PATH}"
+          echo "DNS interno: ${SVC_NAME}.${NS}.svc.cluster.local/${MS_PATH}"
