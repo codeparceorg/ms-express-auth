@@ -3,7 +3,7 @@ import { hashPassword, comparePassword } from '../utils/password';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
 import * as authTokenRepository from '../repositories/auth-token.repository';
-import { AuthResponse, RefreshResponse, UserResponse } from '../dto/auth.dto';
+import { AuthResponse, RefreshResponse } from '../dto/auth.dto';
 
 function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
@@ -15,9 +15,6 @@ function getRefreshExpiry(): Date {
   return expiresAt;
 }
 
-function buildUserResponse(id: string, email: string): UserResponse {
-  return { id, name: email.split('@')[0] };
-}
 
 function buildAuthResponse(id: string, email: string): AuthResponse {
   const payload = { sub: id, email };
@@ -26,7 +23,7 @@ function buildAuthResponse(id: string, email: string): AuthResponse {
   return {
     accessToken,
     refreshToken,
-    user: buildUserResponse(id, email),
+    id: id,
   };
 }
 
@@ -50,7 +47,7 @@ export async function signup(email: string, password: string): Promise<AuthRespo
   return {
     accessToken,
     refreshToken,
-    user: buildUserResponse(created.id, email),
+    id: created.id
   };
 }
 

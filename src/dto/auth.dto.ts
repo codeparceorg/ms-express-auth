@@ -12,15 +12,10 @@ export interface RefreshDto {
   refreshToken: string;
 }
 
-export interface UserResponse {
-  id: string;
-  name: string;
-}
-
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: UserResponse;
+  id: string;
 }
 
 export interface RefreshResponse {
