@@ -16,14 +16,14 @@ function getRefreshExpiry(): Date {
 }
 
 
-function buildAuthResponse(id: string, email: string): AuthResponse {
-  const payload = { sub: id, email };
+function buildAuthResponse(id_auth_token: string, email: string): AuthResponse {
+  const payload = { sub: id_auth_token, email };
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
   return {
     accessToken,
     refreshToken,
-    id: id,
+    id_auth_token: id_auth_token,
   };
 }
 
@@ -47,7 +47,7 @@ export async function signup(email: string, password: string): Promise<AuthRespo
   return {
     accessToken,
     refreshToken,
-    id: created.id
+    id_auth_token: created.id
   };
 }
 

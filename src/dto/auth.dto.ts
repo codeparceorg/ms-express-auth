@@ -15,7 +15,7 @@ export interface RefreshDto {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  id: string;
+  id_auth_token: string;
 }
 
 export interface RefreshResponse {

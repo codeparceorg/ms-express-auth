@@ -87,7 +87,7 @@ paths:
                 required:
                   - accessToken
                   - refreshToken
-                  - id
+                  - id_auth_token
                 properties:
                   accessToken:
                     type: string
@@ -95,7 +95,7 @@ paths:
                   refreshToken:
                     type: string
                     example: eyJhbGciOiJIUzI1NiIs...
-                  id:
+                  id_auth_token:
                     type: string
                     format: uuid
                     example: 550e8400-e29b-41d4-a716-446655440000
@@ -159,13 +159,13 @@ paths:
                 required:
                   - accessToken
                   - refreshToken
-                  - id
+                  - id_auth_token
                 properties:
                   accessToken:
                     type: string
                   refreshToken:
                     type: string
-                  id:
+                  id_auth_token:
                     type: string
                     format: uuid
         '400':
