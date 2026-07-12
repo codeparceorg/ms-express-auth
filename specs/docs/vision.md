@@ -13,6 +13,7 @@ Su función es exponer una API REST que permita al Frontend React autenticarse p
 ### Dentro del alcance
 
 - Autenticación de usuarios (Login, Signup, Refresh Token, JWT)
+- Instrumentación operativa de solicitudes y proceso
 
 ### Fuera del alcance
 

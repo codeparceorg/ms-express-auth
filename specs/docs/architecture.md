@@ -59,6 +59,7 @@ Response HTTP
 | POST   | /auth/login        | Authentication | No             |
 | POST   | /auth/signup       | Authentication | No             |
 | POST   | /auth/refresh      | Authentication | No             |
+| GET    | /metrics           | Instrumentation | No            |
 
 
 ---

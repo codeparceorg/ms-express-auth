@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import routes from './routes';
 import { requestLogger } from './middleware/request-logger.middleware';
+import { metricsMiddleware } from './middleware/metrics.middleware';
 import { errorHandler } from './middleware/error-handler.middleware';
 
 const app: Express = express();
@@ -9,6 +10,7 @@ const app: Express = express();
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
+app.use(metricsMiddleware);
 
 app.use(routes);
 

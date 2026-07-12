@@ -8,6 +8,76 @@ servers:
     description: Local development
 
 paths:
+  /metrics:
+    get:
+      summary: Consultar métricas de comportamiento de la aplicación
+      tags:
+        - Instrumentation
+      responses:
+        '200':
+          description: Métricas acumuladas desde el inicio del proceso
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - requests
+                  - process
+                properties:
+                  requests:
+                    type: object
+                    required:
+                      - total
+                      - clientErrors
+                      - serverErrors
+                      - durationMs
+                      - byRoute
+                    properties:
+                      total:
+                        type: integer
+                        minimum: 0
+                      clientErrors:
+                        type: integer
+                        minimum: 0
+                      serverErrors:
+                        type: integer
+                        minimum: 0
+                      durationMs:
+                        type: object
+                        required: [total, max]
+                        properties:
+                          total:
+                            type: number
+                          max:
+                            type: number
+                      byRoute:
+                        type: array
+                        items:
+                          type: object
+                          required: [method, path, status, count]
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                            status:
+                              type: integer
+                            count:
+                              type: integer
+                  process:
+                    type: object
+                    required: [uptimeSeconds, memory]
+                    properties:
+                      uptimeSeconds:
+                        type: number
+                      memory:
+                        type: object
+                        required: [rssBytes, heapUsedBytes]
+                        properties:
+                          rssBytes:
+                            type: integer
+                          heapUsedBytes:
+                            type: integer
   /health:
     get:
       summary: Verificar estado del servicio
