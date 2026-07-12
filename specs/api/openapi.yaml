@@ -8,76 +8,22 @@ servers:
     description: Local development
 
 paths:
-  /metrics:
+  /auth/metrics:
     get:
       summary: Consultar métricas de comportamiento de la aplicación
       tags:
         - Instrumentation
       responses:
         '200':
-          description: Métricas acumuladas desde el inicio del proceso
+          description: Métricas Prometheus acumuladas desde el inicio del proceso
           content:
-            application/json:
+            text/plain:
               schema:
-                type: object
-                required:
-                  - requests
-                  - process
-                properties:
-                  requests:
-                    type: object
-                    required:
-                      - total
-                      - clientErrors
-                      - serverErrors
-                      - durationMs
-                      - byRoute
-                    properties:
-                      total:
-                        type: integer
-                        minimum: 0
-                      clientErrors:
-                        type: integer
-                        minimum: 0
-                      serverErrors:
-                        type: integer
-                        minimum: 0
-                      durationMs:
-                        type: object
-                        required: [total, max]
-                        properties:
-                          total:
-                            type: number
-                          max:
-                            type: number
-                      byRoute:
-                        type: array
-                        items:
-                          type: object
-                          required: [method, path, status, count]
-                          properties:
-                            method:
-                              type: string
-                            path:
-                              type: string
-                            status:
-                              type: integer
-                            count:
-                              type: integer
-                  process:
-                    type: object
-                    required: [uptimeSeconds, memory]
-                    properties:
-                      uptimeSeconds:
-                        type: number
-                      memory:
-                        type: object
-                        required: [rssBytes, heapUsedBytes]
-                        properties:
-                          rssBytes:
-                            type: integer
-                          heapUsedBytes:
-                            type: integer
+                type: string
+                example: |
+                  # HELP http_requests_total Total HTTP requests
+                  # TYPE http_requests_total counter
+                  http_requests_total{method="POST",route="/login",status_code="200"} 8
   /health:
     get:
       summary: Verificar estado del servicio

@@ -1,13 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { metricsMiddleware } from '../../src/middleware/metrics.middleware';
-import { getMetrics, resetMetrics } from '../../src/services/metrics.service';
+import * as metricsService from '../../src/services/metrics.service';
 
 describe('metrics.middleware', () => {
-  beforeEach(() => {
-    resetMetrics();
-  });
-
-  it('registra una solicitud cuando la respuesta finaliza', () => {
+  it('registra método, ruta, estado y duración al finalizar la respuesta', () => {
     const listeners = new Map<string, () => void>();
     const req = { method: 'POST', path: '/auth/login' } as unknown as Request;
     const res = {
@@ -18,28 +14,29 @@ describe('metrics.middleware', () => {
       }),
     } as unknown as Response;
     const next = jest.fn() as NextFunction;
+    const recordSpy = jest.spyOn(metricsService, 'recordHttpRequest');
 
     metricsMiddleware(req, res, next);
     listeners.get('finish')?.();
 
     expect(next).toHaveBeenCalledTimes(1);
-    expect(getMetrics().requests).toMatchObject({ total: 1, clientErrors: 1 });
-    expect(getMetrics().requests.byRoute).toEqual([
-      { method: 'POST', path: '/auth/login', status: 401, count: 1 },
-    ]);
+    expect(recordSpy).toHaveBeenCalledWith(
+      { method: 'POST', route: '/auth/login', status_code: '401' },
+      expect.any(Number),
+    );
+    expect(recordSpy.mock.calls[0][1]).toBeGreaterThanOrEqual(0);
   });
 
-  it.each(['/health', '/auth/health', '/metrics', '/favicon.ico', '/static/app.js'])(
-    'no registra la ruta excluida %s',
-    (path) => {
-      const req = { method: 'GET', path } as unknown as Request;
-      const res = { on: jest.fn() } as unknown as Response;
-      const next = jest.fn() as NextFunction;
+  it('no registra el endpoint de métricas', () => {
+    const req = { method: 'GET', path: '/auth/metrics' } as unknown as Request;
+    const res = { on: jest.fn() } as unknown as Response;
+    const next = jest.fn() as NextFunction;
+    const recordSpy = jest.spyOn(metricsService, 'recordHttpRequest');
 
-      metricsMiddleware(req, res, next);
+    metricsMiddleware(req, res, next);
 
-      expect(res.on).not.toHaveBeenCalled();
-      expect(getMetrics().requests.total).toBe(0);
-    },
-  );
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(res.on).not.toHaveBeenCalled();
+    expect(recordSpy).not.toHaveBeenCalled();
+  });
 });

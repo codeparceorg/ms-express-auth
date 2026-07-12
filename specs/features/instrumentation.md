@@ -2,20 +2,19 @@
 
 ## Objetivo
 
-Recopilar métricas en memoria sobre el comportamiento HTTP y del proceso para facilitar el monitoreo operativo del servicio.
+Recopilar métricas Prometheus sobre el comportamiento HTTP y del proceso para facilitar el monitoreo operativo del servicio.
 
 ---
 
 ## Métricas recopiladas
 
-Por cada solicitud no excluida se deben registrar:
+Por cada solicitud HTTP se deben registrar:
 
-- total de solicitudes procesadas;
-- solicitudes agrupadas por método, ruta y código HTTP;
-- duración total y duración máxima en milisegundos;
-- cantidad de solicitudes 4xx y 5xx.
+- `http_requests_total`, agrupada por `method`, `route` y `status_code`;
+- `http_request_duration_seconds`, como histograma por `method`, `route` y `status_code`;
+- buckets de duración: 0.01, 0.05, 0.1, 0.2, 0.5, 1, 2 y 5 segundos.
 
-También se debe exponer el tiempo de actividad del proceso y el uso de memoria actual.
+También se deben exponer las métricas predeterminadas del proceso de Node.js mediante `prom-client`.
 
 No se deben recolectar cuerpos, contraseñas, tokens, correos ni otros datos personales.
 
@@ -23,47 +22,33 @@ No se deben recolectar cuerpos, contraseñas, tokens, correos ni otros datos per
 
 ## Endpoint
 
-GET /metrics
+GET /auth/metrics
 
-No requiere autenticación. Devuelve `application/json` con las métricas acumuladas desde el inicio del proceso.
+No requiere autenticación. Devuelve las métricas acumuladas desde el inicio del proceso en el formato de exposición Prometheus (`text/plain; version=0.0.4`).
 
 ### Respuesta 200
 
-```json
-{
-  "requests": {
-    "total": 12,
-    "clientErrors": 2,
-    "serverErrors": 1,
-    "durationMs": {
-      "total": 410,
-      "max": 89
-    },
-    "byRoute": [
-      { "method": "POST", "path": "/auth/login", "status": 200, "count": 8 }
-    ]
-  },
-  "process": {
-    "uptimeSeconds": 523.41,
-    "memory": {
-      "rssBytes": 73400320,
-      "heapUsedBytes": 25165824
-    }
-  }
-}
+```text
+# HELP http_requests_total Total HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="POST",route="/login",status_code="200"} 8
+
+# HELP http_request_duration_seconds HTTP request duration
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_count{method="POST",route="/login",status_code="200"} 8
 ```
 
 ---
 
 ## Exclusiones
 
-Las solicitudes a `/health`, `/metrics`, `/favicon.ico` y archivos estáticos no deben alterar las métricas HTTP.
+La solicitud a `/auth/metrics` no debe instrumentarse para evitar que el endpoint se contabilice a sí mismo.
 
 ---
 
 ## Criterios de aceptación
 
-- Todas las solicitudes HTTP no excluidas actualizan las métricas al finalizar, incluyendo 4xx y 5xx.
-- `GET /metrics` devuelve HTTP 200 y JSON válido sin autenticación.
-- La respuesta no contiene datos sensibles ni identificadores de usuario.
+- Todas las solicitudes HTTP, incluyendo 4xx y 5xx, actualizan las métricas al finalizar.
+- `GET /auth/metrics` devuelve HTTP 200 y métricas Prometheus válidas sin autenticación.
+- La respuesta no contiene cuerpos, credenciales, tokens ni datos personales.
 - La instrumentación no modifica el contrato de los endpoints de autenticación.

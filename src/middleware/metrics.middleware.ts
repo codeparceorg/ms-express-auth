@@ -1,27 +1,27 @@
 import { NextFunction, Request, Response } from 'express';
-import { recordRequest } from '../services/metrics.service';
+import { recordHttpRequest } from '../services/metrics.service';
 
-const EXCLUDED_PATHS = new Set(['/health', '/auth/health', '/metrics', '/favicon.ico']);
-
-function isExcluded(path: string): boolean {
-  return EXCLUDED_PATHS.has(path) || path.startsWith('/static/');
-}
+const METRICS_PATH = '/auth/metrics';
 
 export function metricsMiddleware(req: Request, res: Response, next: NextFunction): void {
-  const path = req.path;
-  if (isExcluded(path)) {
+  if (req.path === METRICS_PATH) {
     next();
     return;
   }
 
-  const start = performance.now();
+  const start = process.hrtime.bigint();
   res.on('finish', () => {
-    recordRequest({
-      method: req.method,
-      path,
-      status: res.statusCode,
-      durationMs: Math.round(performance.now() - start),
-    });
+    const elapsedNanoseconds = process.hrtime.bigint() - start;
+    const durationSeconds = Number(elapsedNanoseconds) / 1_000_000_000;
+
+    recordHttpRequest(
+      {
+        method: req.method,
+        route: req.path,
+        status_code: res.statusCode.toString(),
+      },
+      durationSeconds,
+    );
   });
 
   next();
