@@ -10,14 +10,15 @@ export function metricsMiddleware(req: Request, res: Response, next: NextFunctio
   }
 
   const start = process.hrtime.bigint();
-  res.on('finish', () => {
+  res.once('finish', () => {
     const elapsedNanoseconds = process.hrtime.bigint() - start;
     const durationSeconds = Number(elapsedNanoseconds) / 1_000_000_000;
+    const route = req.route?.path ?? req.path;
 
     recordHttpRequest(
       {
         method: req.method,
-        route: req.path,
+        route,
         status_code: res.statusCode.toString(),
       },
       durationSeconds,

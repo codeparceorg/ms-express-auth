@@ -8,7 +8,7 @@ describe('metrics.middleware', () => {
     const req = { method: 'POST', path: '/auth/login' } as unknown as Request;
     const res = {
       statusCode: 401,
-      on: jest.fn((event: string, listener: () => void) => {
+      once: jest.fn((event: string, listener: () => void) => {
         listeners.set(event, listener);
         return res;
       }),
@@ -38,5 +38,28 @@ describe('metrics.middleware', () => {
     expect(next).toHaveBeenCalledTimes(1);
     expect(res.on).not.toHaveBeenCalled();
     expect(recordSpy).not.toHaveBeenCalled();
+  });
+
+  it('registra el estado 500 final una sola vez', () => {
+    const listeners = new Map<string, () => void>();
+    const req = { method: 'POST', path: '/auth/login' } as unknown as Request;
+    const res = {
+      statusCode: 500,
+      once: jest.fn((event: string, listener: () => void) => {
+        listeners.set(event, listener);
+        return res;
+      }),
+    } as unknown as Response;
+    const next = jest.fn() as NextFunction;
+    const recordSpy = jest.spyOn(metricsService, 'recordHttpRequest');
+
+    metricsMiddleware(req, res, next);
+    listeners.get('finish')?.();
+
+    expect(recordSpy).toHaveBeenCalledTimes(1);
+    expect(recordSpy).toHaveBeenCalledWith(
+      { method: 'POST', route: '/auth/login', status_code: '500' },
+      expect.any(Number),
+    );
   });
 });

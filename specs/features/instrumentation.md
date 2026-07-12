@@ -46,9 +46,21 @@ La solicitud a `/auth/metrics` no debe instrumentarse para evitar que el endpoin
 
 ---
 
+## Captura de errores no controlados (HTTP 500)
+
+Cuando un handler de ruta lanza una excepción no controlada, el middleware centralizado de errores (`errorHandler`) envía una respuesta HTTP 500. El middleware de métricas registra el estado final **después** de que el error handler ha enviado la respuesta, usando el evento `finish` de Express.
+
+La etiqueta `route` se resuelve a partir de `req.route.path` (la ruta definida en Express) para que las respuestas 500 usen la misma serie que las respuestas exitosas del mismo endpoint.
+
+Cada respuesta 500 genera exactamente **un** registro en `http_requests_total` y **un** registro en `http_request_duration_seconds`.
+
+---
+
 ## Criterios de aceptación
 
-- Todas las solicitudes HTTP, incluyendo 4xx y 5xx, actualizan las métricas al finalizar.
+- Todas las solicitudes HTTP, incluyendo 4xx y 5xx, actualizan las métricas al finalizar con el estado final enviado al cliente.
+- Las respuestas 500 generadas por errores no controlados se registran con `status_code="500"` en ambas métricas.
+- La etiqueta `route` de una respuesta 500 corresponde a la misma ruta que las respuestas exitosas del mismo endpoint.
 - `GET /auth/metrics` devuelve HTTP 200 y métricas Prometheus válidas sin autenticación.
 - La respuesta no contiene cuerpos, credenciales, tokens ni datos personales.
 - La instrumentación no modifica el contrato de los endpoints de autenticación.
